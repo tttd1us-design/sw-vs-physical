@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>소프트웨어 vs 물리제품 수익 계산기</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI','Malgun Gothic',sans-serif;background:linear-gradient(135deg,#1a1a2e,#16213e,#0f3460);min-height:100vh;color:#e0e0e0;padding:20px}
+.container{max-width:900px;margin:0 auto}
+h1{text-align:center;font-size:1.8rem;margin-bottom:8px;color:#fff}
+.subtitle{text-align:center;color:#a0a0c0;margin-bottom:24px;font-size:.95rem}
+.card{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px;margin-bottom:16px;backdrop-filter:blur(10px)}
+.card h2{font-size:1.1rem;margin-bottom:12px-color:#00d2ff}
+label{display:block;font-size:.85rem;color:#b0b0d0;margin-bottom:4px}
+input{width:100%;padding:10px 12px;border:1px solid rgba(255,255,255,.15);border-radius:8px;background:rgba(0,0,0,.3);color:#e0e0e0;font-size:.95rem;margin-bottom:12px}
+input:focus{outline:none;border-color:#00d2ff}
+.btn{display:inline-block;padding:10px 24px;border:none;border-radius:8px;cursor:pointer;font-size:.95rem;font-weight:600;transition:all .2s}
+.btn-primary{background:linear-gradient(135deg,#00d2ff,#3a7bd5);color:#fff}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 4px 15px rgba(0,210,255,.4)}
+.btn-danger{background:rgba(231,76,60,.2);color:#e74c3c;border:1px solid rgba(231,76,60,.3)}
+.btn-sm{padding:6px 14px;font-size:.8rem}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.grid-2{grid-template-columns:1fr}}
+.result-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px;margin:12px 0}
+.result-item{background:rgba(0,0,0,.2);border-radius:8px;padding:14px;text-align:center}
+.result-item .num{font-size:1.3rem;font-weight:700}
+.result-item .label{font-size:.75rem;color:#888;margin-top:4px}
+.vs-bar{display:flex;height:30px;border-radius:15px;overflow:hidden;margin:12px 0}
+.vs-bar .sw{background:linear-gradient(90deg,#00d2ff,#3a7bd5);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;color:#fff}
+.vs-bar .phys{background:linear-gradient(90deg,#e67e22,#f39c12);display:flex;align-items:center;justify-content:center;font-size:.75rem;font-weight:600;color:#fff}
+.chart-container{margin:16px 0}
+.bar-row{display:flex;align-items:center;gap:10px;margin:6px 0;font-size:.8rem}
+.bar-row .label{width:100px;text-align:right;color:#b0b0d0}
+.bar-row .bar{flex:1;height:18px;background:rgba(0,0,0,.3);border-radius:9px;overflow:hidden}
+.bar-row .fill{height:100%;border-radius:9px;transition:width .5s}
+.bar-row .val{width:80px;font-weight:600}
+.breakeven{background:rgba(46,204,113,.1);border:1px solid rgba(46,204,113,.3);border-radius:8px;padding:12px;margin:10px 0;font-size:.85rem}
+.breakeven .icon{font-size:1.2rem;margin-right:6px}
+.history-item{background:rgba(0,0,0,.2);border-radius:8px;padding:12px;margin-bottom:8px;font-size:.85rem}
+.history-item .date{color:#00d2ff;font-size:.75rem}
+.empty{text-align:center;color:#666;padding:20px;font-size:.9rem}
+@media(max-width:600px){h1{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<div class="container">
+<h1>⚖️ 소프트웨어 vs 물리제품 수익 계산기</h1>
+<p class="subtitle">선투입 자본, 손익분기점, 실이익률을 나란히 비교하라</p>
+
+<div class="grid-2">
+  <div class="card">
+    <h2>📦 물리제품</h2>
+    <label>판매가 (원)</label>
+    <input id="physPrice" type="number" min="0" placeholder="예: 50000">
+    <label>원가 (원)</label>
+    <input id="physCost" type="number" min="0" placeholder="예: 20000">
+    <label>재고 수량</label>
+    <input id="physStock" type="number" min="0" placeholder="예: 1000">
+    <label>배송비 (원/건)</label>
+    <input id="physShipping" type="number" min="0" placeholder="예: 3000">
+    <label>반품률 (%)</label>
+    <input id="physReturn" type="number" min="0" max="100" step="0.1" placeholder="예: 5">
+    <label>광고비 (월, 원)</label>
+    <input id="physAd" type="number" min="0" placeholder="예: 500000">
+  </div>
+
+  <div class="card">
+    <h2>💻 소프트웨어</h2>
+    <label>구독료 (월, 원)</label>
+    <input id="swPrice" type="number" min="0" placeholder="예: 15000">
+    <label>고객 수</label>
+    <input id="swCustomers" type="number" min="0" placeholder="예: 500">
+    <label>서버비 (월, 원)</label>
+    <input id="swServer" type="number" min="0" placeholder="예: 200000">
+    <label>API 비용 (월, 원)</label>
+    <input id="swApi" type="number" min="0" placeholder="예: 100000">
+    <label>개발비 (초기, 원)</label>
+    <input id="swDev" type="number" min="0" placeholder="예: 10000000">
+    <label>마케팅비 (월, 원)</label>
+    <input id="swMarketing" type="number" min="0" placeholder="예: 300000">
+  </div>
+</div>
+
+<div style="text-align:center;margin:16px 0">
+<button class="btn btn-primary" onclick="calculate()">💰 수익 비교 계산</button>
+</div>
+
+<div id="result"></div>
+
+<div class="card">
+<h2>📜 계산 기록</h2>
+<div id="history"></div>
+<div style="margin-top:12px;text-align:right">
+<button class="btn btn-danger btn-sm" onclick="clearHistory()">기록 전체 삭제</button>
+</div>
+</div>
+</div>
+
+<script>
+function calculate(){
+  // 물리제품 입력
+  const physPrice = parseFloat(document.getElementById('physPrice').value) || 0;
+  const physCost = parseFloat(document.getElementById('physCost').value) || 0;
+  const physStock = parseInt(document.getElementById('physStock').value) || 0;
+  const physShipping = parseFloat(document.getElementById('physShipping').value) || 0;
+  const physReturn = parseFloat(document.getElementById('physReturn').value) || 0;
+  const physAd = parseFloat(document.getElementById('physAd').value) || 0;
+
+  // 소프트웨어 입력
+  const swPrice = parseFloat(document.getElementById('swPrice').value) || 0;
+  const swCustomers = parseInt(document.getElementById('swCustomers').value) || 0;
+  const swServer = parseFloat(document.getElementById('swServer').value) || 0;
+  const swApi = parseFloat(document.getElementById('swApi').value) || 0;
+  const swDev = parseFloat(document.getElementById('swDev').value) || 0;
+  const swMarketing = parseFloat(document.getElementById('swMarketing').value) || 0;
+
+  if(physPrice<=0 || physCost<=0 || physStock<=0){
+    alert('물리제품 값을 모두 입력해주세요.');
+    return;
+  }
+  if(swPrice<=0 || swCustomers<=0){
+    alert('소프트웨어 값을 모두 입력해주세요.');
+    return;
+  }
+
+  // 물리제품 계산
+  const physRevenue = physPrice * physStock;
+  const physTotalCost = (physCost + physShipping) * physStock + physAd;
+  const physReturnCost = physRevenue * physReturn / 100;
+  const physProfit = physRevenue - physTotalCost - physReturnCost;
+  const physMargin = physRevenue > 0 ? (physProfit / physRevenue * 100) : 0;
+  const physCapital = physTotalCost;
+
+  // 소프트웨어 계산
+  const swRevenue = swPrice * swCustomers;
+  const swTotalCost = swServer + swApi + swMarketing;
+  const swProfit = swRevenue - swTotalCost;
+  const swMargin = swRevenue > 0 ? (swProfit / swRevenue * 100) : 0;
+  const swCapital = swDev + swTotalCost;
+
+  // 손익분기점
+  const physBEP = physPrice > 0 ? Math.ceil(physTotalCost / physPrice) : 0;
+  const swBEP = swPrice > 0 ? Math.ceil(swTotalCost / swPrice) : 0;
+
+  // 선투입 자본
+  const physTotalCapital = physCapital;
+  const swTotalCapital = swDev + swTotalCost;
+
+  // 비교 바
+  const totalProfit = physProfit + swProfit;
+  const physBarWidth = totalProfit > 0 ? Math.max(0, Math.round(physProfit/totalProfit*100)) : 50;
+  const swBarWidth = 100 - physBarWidth;
+
+  // 차트 데이터
+  const maxVal = Math.max(physRevenue, swRevenue, physTotalCost, swTotalCost, 1);
+
+  document.getElementById('result').innerHTML = `
+    <div class="card">
+      <h2>📊 실이익률 비교</h2>
+      <div class="vs-bar">
+        <div class="sw" style="width:${swBarWidth}%">💻 소프트웨어 ${swMargin.toFixed(1)}%</div>
+        <div class="phys" style="width:${physBarWidth}%">📦 물리제품 ${physMargin.toFixed(1)}%</div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="card">
+        <h2>📦 물리제품 분석</h2>
+        <div class="result-grid">
+          <div class="result-item"><div class="num" style="color:#f39c12">₩${physRevenue.toLocaleString()}</div><div class="label">총 매출</div></div>
+          <div class="result-item"><div class="num" style="color:#e74c3c">₩${physTotalCost.toLocaleString()}</div><div class="label">총 비용</div></div>
+          <div class="result-item"><div class="num" style="color:#2ecc71">₩${physProfit.toLocaleString()}</div><div class="label">실이익</div></div>
+          <div class="result-item"><div class="num" style="color:#f39c12">${physMargin.toFixed(1)}%</div><div class="label">이익률</div></div>
+        </div>
+        <div class="breakeven">
+          <span class="icon">📍</span><strong>손익분기점:</strong> ${physBEP.toLocaleString()}개 판매 시
+        </div>
+        <div class="breakeven" style="background:rgba(241,196,15,.1);border-color:rgba(241,196,15,.3)">
+          <span class="icon">💰</span><strong>선투입 자본:</strong> ₩${physTotalCapital.toLocaleString()}
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>💻 소프트웨어 분석</h2>
+        <div class="result-grid">
+          <div class="result-item"><div class="num" style="color:#00d2ff">₩${swRevenue.toLocaleString()}</div><div class="label">월 매출</div></div>
+          <div class="result-item"><div class="num" style="color:#e74c3c">₩${swTotalCost.toLocaleString()}</div><div class="label">월 비용</div></div>
+          <div class="result-item"><div class="num" style="color:#2ecc71">₩${swProfit.toLocaleString()}</div><div class="label">월 이익</div></div>
+          <div class="result-item"><div class="num" style="color:#00d2ff">${swMargin.toFixed(1)}%</div><div class="label">이익률</div></div>
+        </div>
+        <div class="breakeven">
+          <span class="icon">📍</span><strong>손익분기점:</strong> ${swBEP.toLocaleString()}명 가입 시
+        </div>
+        <div class="breakeven" style="background:rgba(241,196,15,.1);border-color:rgba(241,196,15,.3)">
+          <span class="icon">💰</span><strong>선투입 자본:</strong> ₩${swTotalCapital.toLocaleString()}
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>📊 비교 차트</h2>
+      <div class="chart-container">
+        <div class="bar-row">
+          <span class="label">물리 매출</span>
+          <div class="bar"><div class="fill" style="width:${Math.round(physRevenue/maxVal*100)}%;background:linear-gradient(90deg,#f39c12,#e67e22)"></div></div>
+          <span class="val" style="color:#f39c12">₩${physRevenue.toLocaleString()}</span>
+        </div>
+        <div class="bar-row">
+          <span class="label">소프트웨어 매출</span>
+          <div class="bar"><div class="fill" style="width:${Math.round(swRevenue/maxVal*100)}%;background:linear-gradient(90deg,#00d2ff,#3a7bd5)"></div></div>
+          <span class="val" style="color:#00d2ff">₩${swRevenue.toLocaleString()}</span>
+        </div>
+        <div class="bar-row">
+          <span class="label">물리 비용</span>
+          <div class="bar"><div class="fill" style="width:${Math.round(physTotalCost/maxVal*100)}%;background:linear-gradient(90deg,#e74c3c,#c0392b)"></div></div>
+          <span class="val" style="color:#e74c3c">₩${physTotalCost.toLocaleString()}</span>
+        </div>
+        <div class="bar-row">
+          <span class="label">소프트웨어 비용</span>
+          <div class="bar"><div class="fill" style="width:${Math.round(swTotalCost/maxVal*100)}%;background:linear-gradient(90deg,#e74c3c,#c0392b)"></div></div>
+          <span class="val" style="color:#e74c3c">₩${swTotalCost.toLocaleString()}</span>
+        </div>
+        <div class="bar-row">
+          <span class="label">물리 이익</span>
+          <div class="bar"><div class="fill" style="width:${Math.round(Math.max(0,physProfit)/maxVal*100)}%;background:linear-gradient(90deg,#2ecc71,#27ae60)"></div></div>
+          <span class="val" style="color:#2ecc71">₩${physProfit.toLocaleString()}</span>
+        </div>
+        <div class="bar-row">
+          <span class="label">소프트웨어 이익</span>
+          <div class="bar"><div class="fill" style="width:${Math.round(Math.max(0,swProfit)/maxVal*100)}%;background:linear-gradient(90deg,#2ecc71,#27ae60)"></div></div>
+          <span class="val" style="color:#2ecc71">₩${swProfit.toLocaleString()}</span>
+        </div>
+      </div>
+    </div>
+  `;
+
+  saveHistory({
+    date: new Date().toLocaleString('ko-KR'),
+    physMargin: physMargin.toFixed(1),
+    swMargin: swMargin.toFixed(1),
+    physProfit: physProfit.toLocaleString(),
+    swProfit: swProfit.toLocaleString()
+  });
+  renderHistory();
+}
+
+function saveHistory(record){
+  let h = JSON.parse(localStorage.getItem('swvs_history')||'[]');
+  h.unshift(record);
+  if(h.length>50) h = h.slice(0,50);
+  localStorage.setItem('swvs_history', JSON.stringify(h));
+}
+
+function renderHistory(){
+  const h = JSON.parse(localStorage.getItem('swvs_history')||'[]');
+  const el = document.getElementById('history');
+  if(h.length===0){
+    el.innerHTML = '<div class="empty">아직 계산 기록이 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = h.map(r=>`
+    <div class="history-item">
+      <div class="date">${r.date}</div>
+      <div>물리제품 ${r.physMargin}% (${r.physProfit}원) vs 소프트웨어 ${r.swMargin}% (${r.swProfit}원)</div>
+    </div>
+  `).join('');
+}
+
+function clearHistory(){
+  if(confirm('모든 계산 기록을 삭제하시겠습니까?')){
+    localStorage.removeItem('swvs_history');
+    renderHistory();
+  }
+}
+
+renderHistory();
+</script>
+</body>
+</html>
